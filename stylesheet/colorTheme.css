@@ -1,0 +1,46 @@
+html {
+  --c-h1: #1a1b26;
+  --c-h2: #286983;
+  --c-h3: #754cac;
+  --c-h4: #2e7de9;
+  --c-bg: #fff;
+  --ft-clr: #000;
+}
+
+html.dark {
+  --c-h1: #c0caf5;
+  --c-h2: #7aa2f7;
+  --c-h3: #bb9af7;
+  --c-h4: #7dcfff;
+  --c-bg: #333;
+  --ft-clr: #fff;
+}
+
+
+/* Markdown 颜色主题 */
+main {
+  background-color: var(--c-bg);
+}
+
+.prose, .prose blockquote {
+  color: var(--ft-clr);
+}
+.prose h1 {
+  color: var(--c-h1);
+}
+
+.prose h2 {
+  color: var(--c-h2);
+}
+
+.prose h3 {
+  color: var(--c-h3);
+}
+
+.prose h4 {
+  color: var(--c-h4);
+}
+
+body {
+  background-color: white !important;
+}

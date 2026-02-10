@@ -1,0 +1,60 @@
+/* Wiki 详情页的 Markdown 基础样式 */
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@layer components {
+  /* 去除行内代码的反引号 */
+  .prose :where(code):not(:where([class~="not-prose"] *))::before {
+    content: "" !important;
+  }
+  .prose :where(code):not(:where([class~="not-prose"] *))::after {
+    content: "" !important;
+  }
+  /* 行内代码 */
+  .prose code {
+    @apply text-pink-600 dark:text-pink-400 bg-slate-100 dark:bg-slate-800/50 px-1.5 py-0.5 rounded text-[0.9em] font-normal border border-slate-200 dark:border-slate-700/50;
+  }
+
+  /* 超链接 */
+  .prose a {
+    @apply text-blue-600 dark:text-blue-400 no-underline hover:underline decoration-blue-300/50 underline-offset-2 transition-colors;
+  }
+
+  /* 引用块 */
+  .prose blockquote {
+    @apply not-italic border-l-4 border-blue-500 bg-blue-50 dark:bg-blue-900/10 px-6 py-4 rounded-r-lg;
+  }
+  .prose blockquote p:first-of-type::before {
+    content: "";
+  }
+  .prose blockquote p:last-of-type::after {
+    content: "";
+  }
+
+  /* 表格 */
+  .prose table {
+    @apply min-w-full divide-y divide-slate-200 dark:divide-slate-700 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden my-8;
+  }
+  .prose thead {
+    @apply bg-slate-50 dark:bg-slate-800/50;
+  }
+  .prose th {
+    @apply px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider;
+  }
+  .prose td {
+    @apply px-4 py-3 text-sm text-slate-600 dark:text-slate-300 whitespace-nowrap;
+  }
+  .prose tr:nth-child(even) {
+    @apply bg-slate-50/50 dark:bg-slate-800/20;
+  }
+  
+  /* 图片 */
+  .prose img {
+    @apply rounded-lg shadow-md border border-slate-200 dark:border-slate-800 my-8;
+  }
+
+  /* Headings with anchors */
+  .prose h1, .prose h2, .prose h3, .prose h4 {
+    @apply scroll-mt-24;
+  }
+}

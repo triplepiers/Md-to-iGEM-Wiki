@@ -1,0 +1,32 @@
+@import "tailwindcss";
+.toc-nav {
+  @apply flex-shrink-0 w-64 sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto hidden xl:block pl-4 border-l border-slate-200 dark:border-slate-800;
+}
+
+/* Title */
+.toc-title {
+  @apply text-sm font-bold text-slate-900 dark:text-slate-100 mb-4 uppercase tracking-wider;
+}
+
+/* List */
+.toc-list {
+  @apply space-y-1;
+}
+
+/* Link Base Styles */
+.toc-link {
+  @apply block text-sm py-1 border-l-2 pl-3 -ml-[17px] transition-colors duration-200;
+}
+
+/* Link States */
+.toc-link-active {
+  @apply border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400 font-medium;
+}
+
+.toc-link-past {
+  @apply border-transparent text-slate-400 dark:text-slate-600 hover:text-slate-600 dark:hover:text-slate-400;
+}
+
+.toc-link-future {
+  @apply border-transparent text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100;
+}
