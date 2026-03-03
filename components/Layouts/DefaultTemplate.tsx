@@ -25,10 +25,6 @@ export const DefaultTemplate: React.FC<Props> = ({ file }) => {
 
         <MarkdownRenderer content={file.content} />
         
-        <div className="mt-16 pt-8 border-t border-slate-200 dark:border-slate-800 flex justify-between text-sm text-slate-500">
-           <span>Last updated: Just now</span>
-           <a href="#" className="hover:text-blue-500">Edit this page</a>
-        </div>
       </div>
 
       {/* Right Sidebar - Table of Contents */}

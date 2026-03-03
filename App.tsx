@@ -9,6 +9,7 @@ import {
 import { ParsedFile, FileType } from './types';
 import { MobileMenu } from './components/Sidebar';
 import { Header } from './components/Header';
+import { Footer } from './components/Footer';
 import { HomeTemplate } from './components/Layouts/HomeTemplate';
 import { DefaultTemplate } from './components/Layouts/DefaultTemplate';
 import { WideTemplate } from './components/Layouts/WideTemplate';
@@ -120,6 +121,8 @@ const App: React.FC = () => {
       <main className="pt-16 flex-1 w-full">
          {renderTemplate()}
       </main>
+
+      <Footer />
       
       {/* Global styles for raw HTML injection */}
       <style>{`
