@@ -1,4 +1,7 @@
-import { FileNode, FileType, FrontMatter, ParsedFile } from '@/types';
+import { unified } from 'unified';
+import remarkParse from 'remark-parse';
+import { visit } from 'unist-util-visit';
+import { FileNode, FileType, FrontMatter, NavigationItem } from '@/types';
 
 /**
  * Parses raw file content into frontmatter and body.
@@ -60,29 +63,103 @@ export const getFileByPath = (nodes: FileNode[], path: string): FileNode | null 
  * Pre-processes Markdown to handle custom syntax extensions.
  * Current support: {{ embed: path/to/file }}
  */
+type OffsetRange = {
+  start: number;
+  end: number;
+};
+
+/**
+ * AST-based protection to prevent parsing embed directives inside
+ * markdown code regions (`inlineCode` and fenced/indented `code` blocks).
+ */
+const getCodeRanges = (markdown: string): OffsetRange[] => {
+  const tree = unified().use(remarkParse).parse(markdown);
+  const ranges: OffsetRange[] = [];
+
+  visit(tree, (node: any) => {
+    if (node.type !== 'inlineCode' && node.type !== 'code') {
+      return;
+    }
+
+    const start = node.position?.start?.offset;
+    const end = node.position?.end?.offset;
+    if (typeof start === 'number' && typeof end === 'number' && start < end) {
+      ranges.push({ start, end });
+    }
+  });
+
+  if (ranges.length <= 1) {
+    return ranges;
+  }
+
+  ranges.sort((a, b) => a.start - b.start);
+  const merged: OffsetRange[] = [ranges[0]];
+
+  for (let i = 1; i < ranges.length; i += 1) {
+    const current = ranges[i];
+    const last = merged[merged.length - 1];
+
+    if (current.start <= last.end) {
+      last.end = Math.max(last.end, current.end);
+    } else {
+      merged.push({ ...current });
+    }
+  }
+
+  return merged;
+};
+
 export const processCustomExtensions = (
   content: string,
   fileMap: Record<string, FileNode>
 ): string => {
+  const codeRanges = getCodeRanges(content);
   const embedRegex = /\{\{\s*embed:\s*([^\s}]+)\s*\}\}/g;
+  let rangeCursor = 0;
+  let lastHandledIndex = 0;
+  let output = '';
 
-  return content.replace(embedRegex, (match, path) => {
+  let match: RegExpExecArray | null;
+  while ((match = embedRegex.exec(content)) !== null) {
+    const fullMatch = match[0];
+    const path = match[1];
+    const matchStart = match.index;
+    const matchEnd = matchStart + fullMatch.length;
+
+    while (rangeCursor < codeRanges.length && codeRanges[rangeCursor].end <= matchStart) {
+      rangeCursor += 1;
+    }
+
+    const currentRange = codeRanges[rangeCursor];
+    const isInsideCode =
+      !!currentRange && currentRange.start < matchEnd && matchStart < currentRange.end;
+
+    if (isInsideCode) {
+      continue;
+    }
+
+    output += content.slice(lastHandledIndex, matchStart);
     const targetFile = fileMap[path];
     if (targetFile && targetFile.content) {
-      // Recursively process the embedded content just in case
-      return `\n\n<!-- Start Embed: ${path} -->\n${processCustomExtensions(
+      // Recursively process the embedded content, preserving the same AST-aware behavior.
+      output += `\n\n<!-- Start Embed: ${path} -->\n${processCustomExtensions(
         targetFile.content,
         fileMap
       )}\n<!-- End Embed -->\n\n`;
+    } else {
+      output += `\n> ⚠️ Error: Could not embed file "${path}". Not found.\n`;
     }
-    return `\n> ⚠️ Error: Could not embed file "${path}". Not found.\n`;
-  });
+
+    lastHandledIndex = matchEnd;
+  }
+
+  output += content.slice(lastHandledIndex);
+  return output;
 };
 
 /**
  * Recursively builds a navigation tree for the sidebar.
  */
-import { NavigationItem } from '../types';
 
 export const buildNavigation = (nodes: FileNode[], level = 0): NavigationItem[] => {
   return nodes
