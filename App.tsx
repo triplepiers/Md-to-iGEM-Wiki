@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useLayoutEffect, useRef } from 'react';
 import { VIRTUAL_FILE_SYSTEM } from './constants';
 import { 
   buildFileMap, 
@@ -13,20 +13,30 @@ import { Footer } from './components/Footer';
 import { HomeTemplate } from './components/Layouts/HomeTemplate';
 import { DefaultTemplate } from './components/Layouts/DefaultTemplate';
 import { WideTemplate } from './components/Layouts/WideTemplate';
+import { NAVIGATION_ORDER } from './config/navOrder';
+
+const getCleanPathFromHash = (hash: string): string => {
+  const rawPath = hash.replace(/^#\/?/, '');
+  return rawPath === '' ? 'index.html' : rawPath;
+};
 
 const App: React.FC = () => {
   // 1. Router State
   const [currentHash, setCurrentHash] = useState(window.location.hash || '#/');
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isDarkMode, setDarkMode] = useState(false);
+  const scrollPositionsRef = useRef<Record<string, number>>({});
+  const currentPathRef = useRef(getCleanPathFromHash(window.location.hash || '#/'));
 
   // 2. Computed Data
   const fileMap = useMemo(() => buildFileMap(VIRTUAL_FILE_SYSTEM), []);
-  const navItems = useMemo(() => buildNavigation(VIRTUAL_FILE_SYSTEM), []);
+  const navItems = useMemo(
+    () => buildNavigation(VIRTUAL_FILE_SYSTEM, 0, NAVIGATION_ORDER),
+    []
+  );
 
   // 3. Current Path Logic
-  const rawPath = currentHash.replace(/^#\/?/, '');
-  const cleanPath = rawPath === '' ? 'index.html' : rawPath;
+  const cleanPath = getCleanPathFromHash(currentHash);
 
   // 4. File Resolution
   const activeFileNode = fileMap[cleanPath] || fileMap[`${cleanPath}/index.html`] || null;
@@ -59,12 +69,24 @@ const App: React.FC = () => {
 
   // 6. Router Listeners
   useEffect(() => {
-    const handleHashChange = () => setCurrentHash(window.location.hash);
+    const handleHashChange = () => {
+      const previousPath = currentPathRef.current;
+      scrollPositionsRef.current[previousPath] = window.scrollY;
+      setCurrentHash(window.location.hash || '#/');
+    };
+
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
-  // 7. Theme Toggle
+  // 7. Per-page scroll memory
+  useLayoutEffect(() => {
+    const savedScrollY = scrollPositionsRef.current[cleanPath] ?? 0;
+    window.scrollTo(0, savedScrollY);
+    currentPathRef.current = cleanPath;
+  }, [cleanPath]);
+
+  // 8. Theme Toggle
   useEffect(() => {
       if (isDarkMode) {
           document.documentElement.classList.add('dark');
@@ -73,7 +95,7 @@ const App: React.FC = () => {
       }
   }, [isDarkMode]);
 
-  // 8. Template Selection
+  // 9. Template Selection
   const renderTemplate = () => {
     if (!parsedFile) {
         return (

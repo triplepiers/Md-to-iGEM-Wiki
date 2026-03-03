@@ -51,7 +51,7 @@ const TopNavItem: React.FC<{ item: NavigationItem; currentPath: string; depth?: 
       <div 
         className={`
           absolute z-50 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200
-          bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-xl py-1 min-w-[200px]
+          bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-xl py-1
           ${depth === 0 ? 'top-full left-0 mt-1' : 'top-0 left-full ml-1'}
         `}
       >

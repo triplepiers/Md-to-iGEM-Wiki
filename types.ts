@@ -34,3 +34,11 @@ export interface NavigationItem {
   children?: NavigationItem[];
   level: number;
 }
+
+export interface NavigationOrderNode {
+  path: string;
+  children?: NavigationOrderConfig;
+}
+
+export type NavigationOrderEntry = string | NavigationOrderNode;
+export type NavigationOrderConfig = NavigationOrderEntry[];

@@ -1,7 +1,13 @@
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import { visit } from 'unist-util-visit';
-import { FileNode, FileType, FrontMatter, NavigationItem } from '@/types';
+import {
+  FileNode,
+  FileType,
+  FrontMatter,
+  NavigationItem,
+  NavigationOrderConfig,
+} from '@/types';
 
 /**
  * Parses raw file content into frontmatter and body.
@@ -160,9 +166,87 @@ export const processCustomExtensions = (
 /**
  * Recursively builds a navigation tree for the sidebar.
  */
+const formatNavigationTitle = (name: string): string => {
+  const baseName = name.replace(/\.(md|html)$/i, '');
+  return baseName
+    .replace(/-/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+};
 
-export const buildNavigation = (nodes: FileNode[], level = 0): NavigationItem[] => {
-  return nodes
+const resolveOrderPath = (path: string, parentPath: string): string => {
+  const normalizedPath = path.replace(/^\/+|\/+$/g, '');
+  if (!normalizedPath) {
+    return parentPath;
+  }
+
+  if (normalizedPath.includes('/')) {
+    return normalizedPath;
+  }
+
+  return parentPath ? `${parentPath}/${normalizedPath}` : normalizedPath;
+};
+
+const buildOrderContext = (
+  orderConfig: NavigationOrderConfig,
+  parentPath: string
+): {
+  orderMap: Map<string, number>;
+  childConfigMap: Map<string, NavigationOrderConfig>;
+} => {
+  const orderMap = new Map<string, number>();
+  const childConfigMap = new Map<string, NavigationOrderConfig>();
+
+  orderConfig.forEach((entry, index) => {
+    const rawPath = typeof entry === 'string' ? entry : entry.path;
+    const resolvedPath = resolveOrderPath(rawPath, parentPath);
+    orderMap.set(resolvedPath, index);
+
+    if (typeof entry !== 'string' && entry.children && entry.children.length > 0) {
+      childConfigMap.set(resolvedPath, entry.children);
+    }
+  });
+
+  return { orderMap, childConfigMap };
+};
+
+const applyCustomNavigationOrder = (
+  nodes: FileNode[],
+  orderMap: Map<string, number>
+): FileNode[] => {
+  if (orderMap.size === 0) {
+    return nodes;
+  }
+
+  const prioritized: FileNode[] = [];
+  const rest: FileNode[] = [];
+
+  nodes.forEach((node) => {
+    if (orderMap.has(node.path)) {
+      prioritized.push(node);
+    } else {
+      rest.push(node);
+    }
+  });
+
+  prioritized.sort((a, b) => {
+    const aIndex = orderMap.get(a.path) ?? Number.MAX_SAFE_INTEGER;
+    const bIndex = orderMap.get(b.path) ?? Number.MAX_SAFE_INTEGER;
+    return aIndex - bIndex;
+  });
+
+  return [...prioritized, ...rest];
+};
+
+export const buildNavigation = (
+  nodes: FileNode[],
+  level = 0,
+  orderConfig: NavigationOrderConfig = [],
+  parentPath = ''
+): NavigationItem[] => {
+  const { orderMap, childConfigMap } = buildOrderContext(orderConfig, parentPath);
+  const orderedNodes = applyCustomNavigationOrder(nodes, orderMap);
+
+  return orderedNodes
     .filter(node => {
         // Hide snippets and index.html from sidebar usually, or specific config
         if (node.path.includes('snippets')) return false;
@@ -171,13 +255,14 @@ export const buildNavigation = (nodes: FileNode[], level = 0): NavigationItem[] 
     })
     .map((node) => {
       const item: NavigationItem = {
-        title: node.name.replace(/\.(md|html)$/, '').replace(/-/g, ' ').replace(/^\w/, c => c.toUpperCase()),
+        title: formatNavigationTitle(node.name),
         path: node.path,
         level,
       };
 
       if (node.children) {
-        item.children = buildNavigation(node.children, level + 1);
+        const childOrderConfig = childConfigMap.get(node.path) ?? [];
+        item.children = buildNavigation(node.children, level + 1, childOrderConfig, node.path);
       }
       return item;
     });
