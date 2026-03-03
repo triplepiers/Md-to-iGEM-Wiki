@@ -11,9 +11,14 @@ export const WideTemplate: React.FC<Props> = ({ file }) => {
   return (
     <div className="w-full max-w-[1400px] mx-auto px-4 py-12">
       <div className="rounded-xl p-8 mb-8 border border-slate-200 dark:border-slate-800">
-        <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white mb-2">
+        <h1 className="text-4xl font-extrabold mb-2" style={{ color: 'var(--c-h1)' }}>
             {file.meta.title}
         </h1>
+        {file.meta.description && (
+          <p className="mb-3 text-base" style={{ color: 'var(--ft-clr)' }}>
+            {file.meta.description}
+          </p>
+        )}
         <div className="font-mono text-sm">Template: Wide</div>
       </div>
       

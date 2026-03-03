@@ -15,6 +15,8 @@ import { DefaultTemplate } from './components/Layouts/DefaultTemplate';
 import { WideTemplate } from './components/Layouts/WideTemplate';
 import { NAVIGATION_ORDER } from './config/navOrder';
 
+const HOME_MARKDOWN_PATH = 'Home.md';
+
 const getCleanPathFromHash = (hash: string): string => {
   const rawPath = hash.replace(/^#\/?/, '');
   return rawPath === '' ? 'index.html' : rawPath;
@@ -67,6 +69,21 @@ const App: React.FC = () => {
     };
   }, [activeFileNode, fileMap]);
 
+  const homeMarkdownSection = useMemo(() => {
+    const homeFileNode = fileMap[HOME_MARKDOWN_PATH];
+    if (!homeFileNode || homeFileNode.type !== FileType.FILE || !homeFileNode.content) {
+      return null;
+    }
+
+    const { meta, body } = parseFrontMatter(homeFileNode.content);
+    const processedBody = processCustomExtensions(body, fileMap);
+
+    return {
+      meta,
+      content: processedBody,
+    };
+  }, [fileMap]);
+
   // 6. Router Listeners
   useEffect(() => {
     const handleHashChange = () => {
@@ -109,7 +126,7 @@ const App: React.FC = () => {
 
     // Special case for Home
     if (parsedFile.path === 'index.html' || parsedFile.meta.template === 'home') {
-        return <HomeTemplate file={parsedFile} />;
+        return <HomeTemplate file={parsedFile} markdownSection={homeMarkdownSection} />;
     }
 
     switch (parsedFile.meta.template) {
@@ -122,7 +139,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 flex flex-col font-sans">
+    <div className="min-h-screen flex flex-col">
       <Header 
         navItems={navItems}
         currentPath={parsedFile?.path || ''}
@@ -145,55 +162,6 @@ const App: React.FC = () => {
       </main>
 
       <Footer />
-      
-      {/* Global styles for raw HTML injection */}
-      <style>{`
-        .hero { 
-            text-align: center; 
-            padding: 6rem 1rem; 
-        }
-        .hero h1 { 
-            font-size: 3.5rem; 
-            font-weight: 800; 
-            margin-bottom: 1.5rem;
-            letter-spacing: -0.05em;
-        }
-        .dark .hero h1 { color: white; }
-        .hero p { 
-            font-size: 1.25rem; 
-            color: #64748b; 
-            max-width: 600px; 
-            margin: 0 auto 2.5rem; 
-        }
-        .dark .hero p { color: #94a3b8; }
-        .actions { 
-            display: flex; 
-            gap: 1rem; 
-            justify-content: center; 
-        }
-        .btn-primary { 
-            background: #2563eb; 
-            color: white; 
-            padding: 0.75rem 1.5rem; 
-            border-radius: 0.5rem; 
-            font-weight: 600; 
-            text-decoration: none; 
-            transition: background 0.2s;
-        }
-        .btn-primary:hover { background: #1d4ed8; }
-        .btn-secondary { 
-            background: #f1f5f9; 
-            color: #0f172a; 
-            padding: 0.75rem 1.5rem; 
-            border-radius: 0.5rem; 
-            font-weight: 600; 
-            text-decoration: none; 
-            transition: background 0.2s;
-        }
-        .dark .btn-secondary { background: #1e293b; color: white; }
-        .btn-secondary:hover { background: #e2e8f0; }
-        .dark .btn-secondary:hover { background: #334155; }
-      `}</style>
     </div>
   );
 };

@@ -4,6 +4,7 @@ html {
   --c-h3: #754cac;
   --c-h4: #2e7de9;
   --c-bg: #fff;
+  --c-link: #bb9af7;
   --ft-clr: #000;
 }
 
@@ -13,9 +14,9 @@ html.dark {
   --c-h3: #bb9af7;
   --c-h4: #7dcfff;
   --c-bg: #333;
+  --c-link: #CBD7F6;
   --ft-clr: #fff;
 }
-
 
 /* Markdown 颜色主题 */
 main {
@@ -41,6 +42,15 @@ main {
   color: var(--c-h4);
 }
 
+.prose strong {
+  color: var(--ft-clr);
+}
+
+.prose a {
+  color: var(--c-link);
+  font-weight: 700;
+}
+
 body {
-  background-color: white !important;
+  background-color: var(--c-bg) !important;
 }

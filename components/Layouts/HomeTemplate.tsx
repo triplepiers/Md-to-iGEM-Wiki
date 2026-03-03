@@ -1,27 +1,44 @@
 import React from 'react';
-import { ParsedFile } from '@/types';
+import { FrontMatter, ParsedFile } from '@/types';
+import { MarkdownRenderer } from '@/components/MarkdownRenderer';
+import '@/stylesheet/home.css';
 
 interface Props {
   file: ParsedFile;
+  markdownSection?: {
+    meta: FrontMatter;
+    content: string;
+  } | null;
 }
 
-export const HomeTemplate: React.FC<Props> = ({ file }) => {
+export const HomeTemplate: React.FC<Props> = ({ file, markdownSection }) => {
   // If it's an HTML file, we can render it raw or parse it.
-  // For the demo, we render raw HTML content if the extension is .html
+  // Render raw landing section first, and optionally append markdown section from Home.md.
   if (file.extension === 'html') {
     return (
-      <div 
-        className="w-full h-full min-h-[calc(100vh-64px)] flex flex-col items-center justify-center bg-white dark:bg-slate-950 px-4"
-        dangerouslySetInnerHTML={{ __html: file.content }}
-      />
+      <div className="w-full">
+        <div dangerouslySetInnerHTML={{ __html: file.content }} />
+        {markdownSection && (
+          <section className="w-full ">
+            <div className="mx-auto max-w-4xl px-4 py-12">
+              {markdownSection.meta.title && (
+                <h2 className="mb-6 text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+                  {markdownSection.meta.title}
+                </h2>
+              )}
+              <MarkdownRenderer content={markdownSection.content} />
+            </div>
+          </section>
+        )}
+      </div>
     );
   }
 
   // Fallback if it's markdown
   return (
     <div className="max-w-4xl mx-auto py-12 px-4">
-        <h1 className="text-4xl font-bold mb-4">{file.meta.title}</h1>
-        <div>{file.content}</div>
+      <h1 className="text-4xl font-bold mb-4">{file.meta.title}</h1>
+      <div>{file.content}</div>
     </div>
   );
 };

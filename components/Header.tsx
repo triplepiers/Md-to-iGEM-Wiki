@@ -1,6 +1,7 @@
 import React from 'react';
 import { Menu, Moon, Sun } from 'lucide-react';
 import { TopNav } from './TopNav';
+import { Logo } from './Logo';
 import { NavigationItem } from '../types';
 
 interface HeaderProps {
@@ -26,9 +27,10 @@ export const Header: React.FC<HeaderProps> = ({
                     {/* Logo */}
                     <a
                         href="#/"
-                        className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mr-4"
+                        className="mr-2 rounded-lg px-1 py-1 transition-opacity hover:opacity-90"
+                        aria-label="Go to Home"
                     >
-                        ReactDocs
+                        <Logo />
                     </a>
                 </div>
                 {/* 右侧内容 */}

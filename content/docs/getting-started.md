@@ -1,12 +1,8 @@
 ---
-template: default
 title: Getting Started
-description: How to install and use the framework.
 ---
 
-# Getting Started
-
-Welcome to the **ReactDocs** framework. This page demonstrates a standard documentation layout.
+Welcome to the **iGEM FlowWiki** framework. This page demonstrates a standard documentation layout.
 
 ## Installation
 

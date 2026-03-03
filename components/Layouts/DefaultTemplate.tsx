@@ -13,11 +13,11 @@ export const DefaultTemplate: React.FC<Props> = ({ file }) => {
       {/* Main Content Column */}
       <div className="flex-1 min-w-0 max-w-4xl mx-auto xl:mx-0">
         <div className="mb-8 border-b border-slate-200 dark:border-slate-800 pb-4">
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+          <h1 className="text-3xl font-bold tracking-tight" style={{ color: 'var(--c-h1)' }}>
             {file.meta.title || 'Untitled'}
           </h1>
           {file.meta.description && (
-            <p className="mt-2 text-lg text-slate-600 dark:text-slate-400">
+            <p className="mt-2 text-lg" style={{ color: 'var(--ft-clr)' }}>
               {file.meta.description}
             </p>
           )}
