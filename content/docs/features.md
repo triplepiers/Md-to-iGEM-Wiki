@@ -19,6 +19,6 @@ Below is an example of embedding another file using our custom syntax `{{ embed:
 
 **Embedded Content:**
 
-{{ embed: docs/snippets/example.md }}
+{{ embed: Docs/example.md }}
 
 ---
