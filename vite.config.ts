@@ -13,6 +13,45 @@ export default defineConfig(({ mode }) => {
         alias: {
           '@': path.resolve(__dirname, '.'),
         }
-      }
+      },
+      build: {
+        rollupOptions: {
+          output: {
+            manualChunks(id) {
+              if (!id.includes('node_modules')) {
+                return undefined;
+              }
+
+              if (id.includes('/react/') || id.includes('/react-dom/')) {
+                return 'react-vendor';
+              }
+
+              if (
+                id.includes('/react-markdown/') ||
+                id.includes('/remark-gfm/') ||
+                id.includes('/rehype-raw/') ||
+                id.includes('/unified/') ||
+                id.includes('/remark-parse/')
+              ) {
+                return 'markdown-vendor';
+              }
+
+              if (
+                id.includes('/react-syntax-highlighter/') ||
+                id.includes('/prismjs/') ||
+                id.includes('/refractor/')
+              ) {
+                return 'syntax-vendor';
+              }
+
+              if (id.includes('/lucide-react/')) {
+                return 'icons-vendor';
+              }
+
+              return undefined;
+            },
+          },
+        },
+      },
     };
 });

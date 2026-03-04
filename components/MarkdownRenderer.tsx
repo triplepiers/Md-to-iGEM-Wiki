@@ -2,8 +2,16 @@ import React, { useEffect, useState, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import js from 'react-syntax-highlighter/dist/esm/languages/prism/javascript';
+import ts from 'react-syntax-highlighter/dist/esm/languages/prism/typescript';
+import jsx from 'react-syntax-highlighter/dist/esm/languages/prism/jsx';
+import tsx from 'react-syntax-highlighter/dist/esm/languages/prism/tsx';
+import css from 'react-syntax-highlighter/dist/esm/languages/prism/css';
+import bash from 'react-syntax-highlighter/dist/esm/languages/prism/bash';
+import json from 'react-syntax-highlighter/dist/esm/languages/prism/json';
+import markup from 'react-syntax-highlighter/dist/esm/languages/prism/markup';
 import { Check, Copy } from 'lucide-react';
 import { slugify } from '@/utils/slug';
 import { resolveAppLinkHref } from '@/utils/internalLink';
@@ -16,6 +24,21 @@ interface CodeBlockWithCopyProps {
   code: string;
   language: string;
 }
+
+SyntaxHighlighter.registerLanguage('js', js);
+SyntaxHighlighter.registerLanguage('javascript', js);
+SyntaxHighlighter.registerLanguage('ts', ts);
+SyntaxHighlighter.registerLanguage('typescript', ts);
+SyntaxHighlighter.registerLanguage('jsx', jsx);
+SyntaxHighlighter.registerLanguage('tsx', tsx);
+SyntaxHighlighter.registerLanguage('css', css);
+SyntaxHighlighter.registerLanguage('bash', bash);
+SyntaxHighlighter.registerLanguage('shell', bash);
+SyntaxHighlighter.registerLanguage('sh', bash);
+SyntaxHighlighter.registerLanguage('json', json);
+SyntaxHighlighter.registerLanguage('html', markup);
+SyntaxHighlighter.registerLanguage('xml', markup);
+SyntaxHighlighter.registerLanguage('markdown', markup);
 
 const CodeBlockWithCopy: React.FC<CodeBlockWithCopyProps> = ({ code, language }) => {
   const [copied, setCopied] = useState(false);
