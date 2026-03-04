@@ -61,7 +61,18 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ content }) => 
       }
     });
 
-    return () => observer.disconnect();
+    const syncActiveWhenAtTop = () => {
+      if (window.scrollY <= 20) {
+        setActiveId(headings[0]?.id ?? '');
+      }
+    };
+
+    window.addEventListener('scroll', syncActiveWhenAtTop, { passive: true });
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('scroll', syncActiveWhenAtTop);
+    };
   }, [headings]);
 
   const activeIndex = headings.findIndex((heading) => heading.id === activeId);

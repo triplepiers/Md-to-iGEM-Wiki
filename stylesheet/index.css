@@ -23,6 +23,19 @@ body {
 }
 
 @layer components {
+  /* 滚动到顶部按钮 */
+  .scroll-to-top-btn {
+    @apply cursor-pointer border-slate-300 bg-white/95 text-slate-700 hover:bg-slate-100;
+  }
+
+  .dark .scroll-to-top-btn {
+    @apply border-slate-700 bg-slate-900/95 text-slate-200;
+  }
+
+  .dark .scroll-to-top-btn:hover {
+    @apply bg-slate-800;
+  }
+
   /* Custom scrollbar */
   .scrollbar-thin::-webkit-scrollbar {
     width: 6px;

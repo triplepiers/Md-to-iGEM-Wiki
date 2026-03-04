@@ -6,6 +6,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Check, Copy } from 'lucide-react';
 import { slugify } from '@/utils/slug';
+import { resolveAppLinkHref } from '@/utils/internalLink';
 
 interface MarkdownRendererProps {
   content: string;
@@ -190,10 +191,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) =
             const isExternal = !!href && /^(https?:)?\/\//i.test(href);
             const isSpecialScheme = !!href && /^(mailto:|tel:)/i.test(href);
             const isInPageAnchor = !!href && href.startsWith('#') && !href.startsWith('#/');
-            const processedHref =
-              isExternal || isSpecialScheme || isInPageAnchor
-                ? href
-                : `#/${href?.replace(/^\//, '')}`;
+            const processedHref = href ? resolveAppLinkHref(href) : href;
 
             const handleAnchorClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
               if (!isInPageAnchor || !href) {

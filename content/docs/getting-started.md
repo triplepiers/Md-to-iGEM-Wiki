@@ -71,6 +71,44 @@ npm run dev
 
 ## Build
 
-使用 `npm run build` 可以手动将网页打包至 `/dist`
+### Default
+
+```bash
+npm run build
+```
+
+- 产物目录： `/dist`
 
 - **不包含** `/content/Docs` 下的文件
+
+### 👍 Static
+
+如果需要将页面导出为独立 HTML 文件，使用：
+
+```bash
+npm run build:static
+```
+
+- 产物目录：`/dist-static`
+- 执行流程：先按 `ignore` 临时生成过滤版 `constants.ts` 再打包，导出完成后会自动恢复完整版 `constants.ts`
+
+- 可在 `/config/static-export.config.json` 中配置 `ignore`：忽略 `content` 下的文件或目录（相对路径，大小写敏感）
+
+    ```json
+    {
+        "ignore": ["Docs", "Team/Attributions.md"] // 直接删掉 md 也行
+    }
+    ```
+
+- 导出规则（ignore 之外）：
+  - Home 固定导出为 `index.html`
+  - 其他页面统一导出为 `全小写源文件名.html`，示例：
+
+    `Engagement/Human-Practices.md -> human-practices.html`
+
+### 页面间引用撰写
+
+- 开发模式：正常的 **带目录名** 写超链接，例如想跳转到 Plant：`/Wet-Lab/Plant.md`
+- 导出结果：
+    - default：和开发模式一致，带文件目录、`md` 结尾
+    - static：与 iGEM 规范一致，自动改写为 **小写** 文件名

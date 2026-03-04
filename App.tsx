@@ -13,22 +13,36 @@ import { Footer } from './components/Footer';
 import { HomeTemplate } from './components/Layouts/HomeTemplate';
 import { DefaultTemplate } from './components/Layouts/DefaultTemplate';
 import { WideTemplate } from './components/Layouts/WideTemplate';
+import { ScrollToTopButton } from './components/ScrollToTopButton';
 import { NAVIGATION_ORDER } from './config/navOrder';
 
 const HOME_MARKDOWN_PATH = 'Home.md';
 
+const getStaticCurrentSourcePath = (): string | null => {
+  const runtime = (window as any).__STATIC_EXPORT__;
+  if (!runtime || runtime.enabled !== true || typeof runtime.currentSourcePath !== 'string') {
+    return null;
+  }
+
+  return runtime.currentSourcePath;
+};
+
 const getCleanPathFromHash = (hash: string): string => {
   const rawPath = hash.replace(/^#\/?/, '');
-  return rawPath === '' ? 'index.html' : rawPath;
+  if (rawPath === '') {
+    return getStaticCurrentSourcePath() || 'index.html';
+  }
+
+  return rawPath;
 };
 
 const App: React.FC = () => {
   // 1. Router State
-  const [currentHash, setCurrentHash] = useState(window.location.hash || '#/');
+  const [currentHash, setCurrentHash] = useState(window.location.hash || '');
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isDarkMode, setDarkMode] = useState(false);
   const scrollPositionsRef = useRef<Record<string, number>>({});
-  const currentPathRef = useRef(getCleanPathFromHash(window.location.hash || '#/'));
+  const currentPathRef = useRef(getCleanPathFromHash(window.location.hash || ''));
 
   // 2. Computed Data
   const fileMap = useMemo(() => buildFileMap(VIRTUAL_FILE_SYSTEM), []);
@@ -90,7 +104,7 @@ const App: React.FC = () => {
     const handleHashChange = () => {
       const previousPath = currentPathRef.current;
       scrollPositionsRef.current[previousPath] = window.scrollY;
-      setCurrentHash(window.location.hash || '#/');
+      setCurrentHash(window.location.hash || '');
     };
 
     window.addEventListener('hashchange', handleHashChange);
@@ -161,6 +175,8 @@ const App: React.FC = () => {
       <main className="pt-16 flex-1 w-full">
          {renderTemplate()}
       </main>
+
+      <ScrollToTopButton visible={cleanPath !== 'index.html'} />
 
       <Footer />
     </div>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { NavigationItem } from '@/types';
 import { ChevronRight, ChevronDown } from 'lucide-react';
+import { resolveAppPathHref } from '@/utils/internalLink';
 
 interface MobileMenuProps {
   navItems: NavigationItem[];
@@ -42,7 +43,7 @@ const MobileNavItem: React.FC<{ item: NavigationItem; currentPath: string; onClo
           <span className="flex-1" onClick={handleToggle}>{item.title}</span>
         ) : (
           <a 
-             href={`#/${item.path}`} 
+             href={resolveAppPathHref(item.path)}
              className="flex-1 block"
              onClick={() => onClose()}
           >

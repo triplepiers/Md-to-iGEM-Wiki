@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavigationItem } from '@/types';
 import { ChevronDown, ChevronRight } from 'lucide-react';
+import { resolveAppPathHref } from '@/utils/internalLink';
 
 interface TopNavProps {
   navItems: NavigationItem[];
@@ -15,7 +16,7 @@ const TopNavItem: React.FC<{ item: NavigationItem; currentPath: string; depth?: 
   if (!isDirectory) {
     return (
       <a
-        href={`#/${item.path}`}
+        href={resolveAppPathHref(item.path)}
         className={`
           block px-4 py-2 text-sm whitespace-nowrap transition-colors
           ${isActive 
