@@ -19,6 +19,13 @@
 
 ## 1 小功能
 
+### 加载动画
+
+- 在 `/components/LoadingOverlay.tsx` 中修改
+- 在 `/config/loadingOverlay.ts` 中配置：
+  - 开启/关闭
+  - 最短显示时间：`0: 加载完成后立刻关闭, -1: 持续显示(调试), >0: 至少显示指定 ms`
+
 ### 亮暗主题切换
 
 通过右上角的 button 切换

@@ -14,7 +14,9 @@ import { HomeTemplate } from './components/Layouts/HomeTemplate';
 import { DefaultTemplate } from './components/Layouts/DefaultTemplate';
 import { WideTemplate } from './components/Layouts/WideTemplate';
 import { ScrollToTopButton } from './components/ScrollToTopButton';
+import { LoadingOverlay } from './components/LoadingOverlay';
 import { NAVIGATION_ORDER } from './config/navOrder';
+import { LOADING_OVERLAY_CONFIG } from './config/loadingOverlay';
 
 const HOME_MARKDOWN_PATH = 'Home.md';
 
@@ -41,6 +43,7 @@ const App: React.FC = () => {
   const [currentHash, setCurrentHash] = useState(window.location.hash || '');
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isDarkMode, setDarkMode] = useState(false);
+  const [isBootLoading, setIsBootLoading] = useState(LOADING_OVERLAY_CONFIG.enabled);
   const scrollPositionsRef = useRef<Record<string, number>>({});
   const currentPathRef = useRef(getCleanPathFromHash(window.location.hash || ''));
 
@@ -127,7 +130,55 @@ const App: React.FC = () => {
       }
   }, [isDarkMode]);
 
-  // 9. Template Selection
+  // 9. Initial loading overlay: SPA triggers once on first load.
+  // Static export triggers per page because each navigation is a full page load.
+  useEffect(() => {
+    if (!LOADING_OVERLAY_CONFIG.enabled) {
+      return;
+    }
+
+    const { durationMs } = LOADING_OVERLAY_CONFIG;
+    if (durationMs === -1) {
+      return;
+    }
+
+    let loaded = document.readyState === 'complete';
+    let minDurationSatisfied = durationMs <= 0;
+
+    const tryHide = () => {
+      if (loaded && minDurationSatisfied) {
+        setIsBootLoading(false);
+      }
+    };
+
+    const handleLoad = () => {
+      loaded = true;
+      tryHide();
+    };
+
+    let timer: number | null = null;
+    if (durationMs > 0) {
+      timer = window.setTimeout(() => {
+        minDurationSatisfied = true;
+        tryHide();
+      }, durationMs);
+    }
+
+    if (!loaded) {
+      window.addEventListener('load', handleLoad);
+    }
+
+    tryHide();
+
+    return () => {
+      if (timer !== null) {
+        window.clearTimeout(timer);
+      }
+      window.removeEventListener('load', handleLoad);
+    };
+  }, []);
+
+  // 10. Template Selection
   const renderTemplate = () => {
     if (!parsedFile) {
         return (
@@ -179,6 +230,8 @@ const App: React.FC = () => {
       <ScrollToTopButton visible={cleanPath !== 'index.html'} />
 
       <Footer />
+
+      <LoadingOverlay visible={isBootLoading} />
     </div>
   );
 };
