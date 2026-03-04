@@ -11,13 +11,22 @@
     content: "" !important;
   }
   /* 行内代码 */
-  .prose code {
-    @apply text-pink-600 dark:text-pink-400 bg-slate-100 dark:bg-slate-800/50 px-1.5 py-0.5 rounded text-[0.9em] font-normal border border-slate-200 dark:border-slate-700/50;
+  .prose code.inline {
+    color: var(--ft-clr) !important;
+    @apply bg-slate-100 px-1.5 py-0.5 rounded text-[0.9em] font-normal border border-slate-200;
+  }
+  .dark .prose code.inline {
+    @apply text-pink-400 bg-slate-800/50 border-slate-700/50;
   }
 
   /* 超链接 */
   .prose a {
     @apply text-blue-600 dark:text-blue-400 no-underline hover:underline decoration-blue-300/50 underline-offset-2 transition-colors;
+  }
+
+  /* Undefined citation marker */
+  .prose .citation-undefined {
+    @apply text-red-600 dark:text-red-400 font-semibold;
   }
 
   /* 引用块 */
@@ -56,5 +65,13 @@
   /* Headings with anchors */
   .prose h1, .prose h2, .prose h3, .prose h4 {
     @apply scroll-mt-24;
+  }
+
+  /* Code Block */
+  .prose pre > * > div {
+    margin: 0 !important;
+  }
+  .prose pre {
+    padding: 0 !important;
   }
 }

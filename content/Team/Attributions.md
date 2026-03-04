@@ -30,9 +30,10 @@ Teams must use the official Attributions form. This form clearly delineates the 
 
 <div class="mt-4 w-full overflow-hidden">
   <iframe
-      id="igem-attribution-form"
-      title="iGEM Project Attribution Form"
-      style="width: 100%; border: 0; min-height: 20px; border: none;"
-      src="https://attributions.igem.org?team=ZJU-China&year=2023"
-    ></iframe>
+    id="igem-attribution-form"
+    title="iGEM Project Attribution Form"
+    style="width: 100%; border: 0; min-height: 20px; border: none;"
+    src="https://attributions.igem.org?team=ZJU-China&year=2023"
+  >
+  </iframe>
 </div>

@@ -1,19 +1,81 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { Check, Copy } from 'lucide-react';
 import { slugify } from '@/utils/slug';
 
 interface MarkdownRendererProps {
   content: string;
 }
 
+interface CodeBlockWithCopyProps {
+  code: string;
+  language: string;
+}
+
+const CodeBlockWithCopy: React.FC<CodeBlockWithCopyProps> = ({ code, language }) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1500);
+    } catch {
+      const textarea = document.createElement('textarea');
+      textarea.value = code;
+      textarea.setAttribute('readonly', '');
+      textarea.style.position = 'fixed';
+      textarea.style.top = '-9999px';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1500);
+    }
+  };
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={handleCopy}
+        aria-label={copied ? 'Code copied' : 'Copy code'}
+        className="absolute right-2 top-2 z-10 inline-flex h-8 w-8 items-center justify-center rounded-md border border-slate-600/70 bg-slate-800/80 text-slate-100 transition-colors hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+      >
+        {copied ? <Check size={16} /> : <Copy size={16} />}
+      </button>
+      <SyntaxHighlighter
+        // @ts-ignore
+        style={oneDark}
+        language={language}
+        PreTag="div"
+      >
+        {code}
+      </SyntaxHighlighter>
+    </div>
+  );
+};
+
 export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
   const [isHtmlDark, setIsHtmlDark] = useState(
     () => document.documentElement.classList.contains('dark')
   );
+
+  const headingIdFactory = useMemo(() => {
+    const usedIds = new Map<string, number>();
+
+    return (text: string) => {
+      const baseId = slugify(text);
+      const count = usedIds.get(baseId) ?? 0;
+      usedIds.set(baseId, count + 1);
+      return count === 0 ? baseId : `${baseId}-${count + 1}`;
+    };
+  }, [content]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -83,8 +145,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) =
       };
 
       const text = extractText(children);
-      
-      const id = slugify(text);
+      const id = headingIdFactory(text);
       const Tag = `h${level}` as React.ElementType;
 
       return (
@@ -101,32 +162,69 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) =
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeRaw]}
         components={{
-          code({ node, inline, className, children, ...props }: any) {
-            const match = /language-(\w+)/.exec(className || '');
-            return !inline && match ? (
-              <SyntaxHighlighter
-                // @ts-ignore
-                style={oneDark}
-                language={match[1]}
-                PreTag="div"
-                {...props}
-              >
-                {String(children).replace(/\n$/, '')}
-              </SyntaxHighlighter>
-            ) : (
-              <code className={className} {...props}>
+          pre({ node, children, ...props }: any) {
+            const child = React.Children.toArray(children)[0];
+
+            if (!React.isValidElement(child)) {
+              return <pre {...props}>{children}</pre>;
+            }
+
+            const className = ((child.props as { className?: string }).className || '');
+            const match = /language-(\w+)/.exec(className);
+            const codeContent = String((child.props as { children?: React.ReactNode }).children ?? '').replace(
+              /\n$/,
+              ''
+            );
+
+            return <CodeBlockWithCopy code={codeContent} language={match?.[1] || 'text'} />;
+          },
+          code({ className, children, ...props }: any) {
+            return (
+              <code className={['inline', className].filter(Boolean).join(' ')} {...props}>
                 {children}
               </code>
             );
           },
           // Custom handling for links
           a({ node, href, children, ...props }) {
-            const isExternal = href?.startsWith('http');
-            const processedHref = isExternal ? href : `#/${href?.replace(/^\//, '')}`;
+            const isExternal = !!href && /^(https?:)?\/\//i.test(href);
+            const isSpecialScheme = !!href && /^(mailto:|tel:)/i.test(href);
+            const isInPageAnchor = !!href && href.startsWith('#') && !href.startsWith('#/');
+            const processedHref =
+              isExternal || isSpecialScheme || isInPageAnchor
+                ? href
+                : `#/${href?.replace(/^\//, '')}`;
+
+            const handleAnchorClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+              if (!isInPageAnchor || !href) {
+                return;
+              }
+
+              const targetId = href.slice(1);
+              if (!targetId) {
+                return;
+              }
+
+              const element = document.getElementById(targetId);
+              if (!element) {
+                return;
+              }
+
+              event.preventDefault();
+              const headerOffset = 80;
+              const elementPosition = element.getBoundingClientRect().top;
+              const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+              window.scrollTo({
+                top: offsetPosition,
+                behavior: 'smooth',
+              });
+            };
             
             return (
               <a 
                 href={processedHref} 
+                onClick={handleAnchorClick}
                 target={isExternal ? '_blank' : undefined}
                 rel={isExternal ? 'noopener noreferrer' : undefined}
                 {...props}

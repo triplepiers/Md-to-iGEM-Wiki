@@ -32,10 +32,11 @@ const App: React.FC = () => {
 
   // 2. Computed Data
   const fileMap = useMemo(() => buildFileMap(VIRTUAL_FILE_SYSTEM), []);
-  const navItems = useMemo(
-    () => buildNavigation(VIRTUAL_FILE_SYSTEM, 0, NAVIGATION_ORDER),
-    []
-  );
+  const navItems = useMemo(() => {
+    return buildNavigation(VIRTUAL_FILE_SYSTEM, 0, NAVIGATION_ORDER).filter(
+      (item) => item.path !== HOME_MARKDOWN_PATH
+    );
+  }, []);
 
   // 3. Current Path Logic
   const cleanPath = getCleanPathFromHash(currentHash);

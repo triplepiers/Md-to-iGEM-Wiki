@@ -5,7 +5,10 @@
 
 /* Title */
 .toc-title {
-  @apply text-sm font-bold text-slate-900 dark:text-slate-100 mb-4 uppercase tracking-wider;
+  @apply text-sm font-bold text-slate-900 mb-4 uppercase tracking-wider;
+}
+.dark .toc-title {
+  @apply text-slate-100;
 }
 
 /* List */
@@ -15,12 +18,15 @@
 
 /* Link Base Styles */
 .toc-link {
-  @apply block text-sm py-1 border-l-2 pl-3 -ml-[17px] transition-colors duration-200;
+  @apply block text-sm py-1 border-l-2 pl-3 -ml-[17px] transition-colors duration-200; 
 }
 
 /* Link States */
 .toc-link-active {
-  @apply border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400 font-medium;
+  @apply border-indigo-600 text-indigo-600 font-medium;
+}
+.dark .toc-link-active {
+  @apply border-indigo-400 text-indigo-400;
 }
 
 .toc-link-past {
@@ -28,5 +34,8 @@
 }
 
 .toc-link-future {
-  @apply border-transparent text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100;
+  @apply border-transparent text-slate-700 hover:text-slate-900;
+}
+.dark .toc-link-future{
+  @apply text-slate-300 hover:text-slate-100;
 }
