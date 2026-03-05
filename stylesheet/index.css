@@ -1,5 +1,7 @@
 @import "tailwindcss";
 @import "./colorTheme.css";
+@import "./default.css";
+@import "katex/dist/katex.min.css";
 
 /* 字体导入 */
 @import url(https://fonts.loli.net/css2?family=Inter:wght@300;400;500;600;700&display=swap);

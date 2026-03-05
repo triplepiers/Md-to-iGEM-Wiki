@@ -21,17 +21,22 @@
 
   /* 超链接 */
   .prose a {
-    @apply text-blue-600 dark:text-blue-400 no-underline hover:underline decoration-blue-300/50 underline-offset-2 transition-colors;
+    @apply no-underline hover:underline decoration-blue-300/50 underline-offset-2 transition-colors;
   }
 
   /* Undefined citation marker */
   .prose .citation-undefined {
-    @apply text-red-600 dark:text-red-400 font-semibold;
+    @apply text-red-600 font-semibold;
   }
-
+  .dark .prose .citation-undefined {
+    @apply text-red-400;
+  }
   /* 引用块 */
   .prose blockquote {
-    @apply not-italic border-l-4 border-blue-500 bg-blue-50 dark:bg-blue-900/10 px-6 py-4 rounded-r-lg;
+    @apply not-italic border-l-4 border-blue-500 bg-blue-50 px-6 py-4 rounded-r-lg;
+  }
+  .dark .prose blockquote {
+    @apply bg-blue-900/10;
   }
   .prose blockquote p:first-of-type::before {
     content: "";
@@ -42,19 +47,49 @@
 
   /* 表格 */
   .prose table {
-    @apply min-w-full divide-y divide-slate-200 dark:divide-slate-700 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden my-8;
+    margin-top: 0.5em !important;
+    @apply min-w-full divide-y divide-slate-200 border border-slate-200 rounded-lg overflow-hidden;
+  }
+  .dark .prose table {
+    @apply divide-slate-700 border-slate-700;
   }
   .prose thead {
     @apply bg-slate-50 dark:bg-slate-800/50;
   }
   .prose th {
-    @apply px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider;
+    @apply px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider;
+    padding: 10px !important;
+  }
+  .dark .prose th {
+    @apply text-slate-400;
   }
   .prose td {
-    @apply px-4 py-3 text-sm text-slate-600 dark:text-slate-300 whitespace-nowrap;
+    @apply px-4 py-3 text-sm text-slate-600 whitespace-nowrap;
+    padding: 10px !important;
   }
-  .prose tr:nth-child(even) {
-    @apply bg-slate-50/50 dark:bg-slate-800/20;
+  .dark .prose td {
+    @apply text-slate-300;
+  }
+  .prose tbody tr {
+    @apply transition-colors;
+  }
+  .prose tbody tr:hover {
+    @apply bg-blue-50/60;
+  }
+  .dark .prose  tr:hover {
+    @apply bg-blue-900/20;
+  }
+  .prose tbody tr:hover td {
+    @apply text-slate-900;
+  }
+  .dark .prose tbody tr:hover td {
+    @apply text-slate-100;
+  }
+  .prose .md-table-caption {
+    @apply text-sm font-semibold text-slate-700 mb-[-5] w-full text-center;
+  }
+  .dark .prose .md-table-caption {
+    @apply text-slate-300;
   }
   
   /* 图片 */

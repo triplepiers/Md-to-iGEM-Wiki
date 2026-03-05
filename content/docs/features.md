@@ -2,11 +2,13 @@
 
 总的来说就是一个超级丐版 MkDocs：
 
-- Markdown 与 HTML 混排非常自由，也可以让它 <span style="color: #FF0000; font-size: 2.5em; font-weight: bold;">非</span>
+- Markdown 与 HTML 混排非常自由，也可以让它 
+    <span style="color: #FF0000; font-size: 2.5em; font-weight: bold;">非</span>
     <span style="color: #008000; font-size: 2em; vertical-align: middle;">常</span>
     <span style="color: #FF00FF; font-size: 1em;">的</span>
     <span style="color: #8B4513; font-size: 1.5em; font-family: serif;">丑</span>
     <span style="color: #6495ED; font-size: 0.8em; font-style: italic;">陋</span>
+    => 我已经完全掌握了设计！
 
 
 - 主要功能是 **Markdown 转 HTML**:
@@ -76,6 +78,28 @@
 
       `{{ ref: missing-alias }}` {{ ref: missing-alias }}
 
+### 图表绘制 (Echarts)
+
+- 基于 Ecahrts 实现，两个示例在 `components/Charts` 下
+
+  不会写可以让 AI 糊弄一个
+
+- 支持通过 `{{ chart: path-to-tsx }}` 语法嵌入常用图表示例（文件也得塞在 `components/Charts` 下）
+
+  ```md
+  {{ chart: PieChartExample.tsx }}
+  ```
+
+- 自定义参数：支持自定义 图题 + 图表高度
+
+  ```md
+  {{ chart: BarLineComboChartExample.tsx | height=400 | title="xxx" }}
+  ```
+
+{{ chart: PieChartExample.tsx | height=360 | title="饼图示例" }}
+
+{{ chart: BarLineComboChartExample.tsx | height=380 | title="柱状 + 折线复合图示例" }}
+
 ## 2 Markdown 样式预览
 
 在此测试段落文本的行高和颜色。正文颜色应该是 `--c-text-primary`（深蓝灰或柔和白）。
@@ -108,6 +132,38 @@ H4 通常用于参数列表或小步骤。在你的 CSS 中，它被设计为 **
 - [x] 完成 CSS 变量定义
 - [ ] 集成 Markdown 解析器
 - [ ] 优化移动端适配
+
+### 数学公式 (Latex)
+
+- **不支持** 自动编号
+- 支持 `$` 包裹的 inline 公式，如 `$ E=mc^2 $` $ E=mc^2 $
+- 支持 `$$` 包裹的公式块，如：
+
+  $$
+  \begin{aligned}
+  \mathcal{L}(\theta) &= 
+  \sum_{i=1}^{n} \left[ 
+      y_i \log\left( \frac{e^{\mathbf{w}^\top \mathbf{x}_i + b}}{1 + e^{\mathbf{w}^\top \mathbf{x}_i + b}} \right) 
+      + (1 - y_i) \log\left( \frac{1}{1 + e^{\mathbf{w}^\top \mathbf{x}_i + b}} \right)
+  \right] \\
+  &\quad - \frac{\lambda}{2} \|\mathbf{w}\|_2^2 \\[1em]
+  \text{其中:}\quad 
+  \mathbf{w} &= 
+  \begin{bmatrix}
+      w_1 \\ w_2 \\ \vdots \\ w_d
+  \end{bmatrix}, \quad
+  \mathbf{x}_i = 
+  \begin{bmatrix}
+      x_{i1} \\ x_{i2} \\ \vdots \\ x_{id}
+  \end{bmatrix} \\[1em]
+  \frac{\partial \mathcal{L}}{\partial \mathbf{w}} &= 
+  \sum_{i=1}^{n} \left( y_i - \sigma(\mathbf{w}^\top \mathbf{x}_i + b) \right) \mathbf{x}_i 
+  - \lambda \mathbf{w} \\[1em]
+  \text{收敛条件:}\quad 
+  \left\| \frac{\partial \mathcal{L}}{\partial \mathbf{w}} \right\|_2 
+  &< \varepsilon, \quad \varepsilon = 10^{-6}
+  \end{aligned}
+  $$
 
 ### 代码高亮 (Code Blocks)
 
@@ -145,8 +201,16 @@ export const toggleTheme = () => {
 
 ### 表格样式 (Tables)
 
-表格应该有斑马纹 (Zebra Striping) 效果，边框颜色应为 `--c-border`。
+- 支持亮暗色切换 + hover 时高亮 **整行**
+- 支持 **自动标题编号**
 
+- 数据来源
+  1. 直接写 Markdown 表格：支持通过 `{{ table: title="xxx" }}` 定义表标题
+  2. 解析 Excel 表格：
+    - 放在 `attachment/excels` 下，用 `{{ table: url="xxx.xlsx" | title="yyy"}}` 嵌入
+    - 仅解析 **第一张** 数据表、支持合并单元格
+
+{{ table: title="A Title" }}
 | 参数 (Prop) | 类型 (Type) | 默认值 (Default) | 描述 (Description) |
 | --- | --- | --- | --- |
 | `layout` | `string` | `'default'` | 页面布局模式 |
@@ -154,6 +218,7 @@ export const toggleTheme = () => {
 | `toc` | `boolean` | `true` | 是否显示右侧目录 |
 | `author` | `object` | `null` | 文章作者信息对象 |
 
+{{ table: url="test.xlsx" | title="测试嵌入 + 合并单元格" }}
 
 ### 图片与媒体 (Images)
 

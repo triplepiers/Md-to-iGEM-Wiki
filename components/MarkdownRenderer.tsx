@@ -1,7 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
 import rehypeRaw from 'rehype-raw';
+import rehypeKatex from 'rehype-katex';
 import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import js from 'react-syntax-highlighter/dist/esm/languages/prism/javascript';
@@ -15,6 +17,8 @@ import markup from 'react-syntax-highlighter/dist/esm/languages/prism/markup';
 import { Check, ChevronDown, ChevronUp, Copy, Minus, Plus, X } from 'lucide-react';
 import { slugify } from '@/utils/slug';
 import { resolveAppLinkHref } from '@/utils/internalLink';
+import { ExcelTable } from '@/components/ExcelTable';
+import { EChart } from '@/components/EChart';
 
 interface MarkdownRendererProps {
   content: string;
@@ -114,6 +118,80 @@ const extractFigureItems = (markdown: string): FigureItem[] => {
 
   figures.sort((a, b) => a.declaredIndex - b.declaredIndex);
   return figures;
+};
+
+const chartModuleLoaders = import.meta.glob('./Charts/*.tsx');
+const chartModuleByFile: Record<string, () => Promise<any>> = {};
+Object.entries(chartModuleLoaders).forEach(([path, loader]) => {
+  const fileName = path.split('/').pop();
+  if (fileName) {
+    chartModuleByFile[fileName] = loader as () => Promise<any>;
+  }
+});
+
+const ChartRenderer: React.FC<{ file: string; height: number | string }> = ({
+  file,
+  height,
+}) => {
+  const [Component, setComponent] = useState<React.ComponentType<any> | null>(null);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    let isActive = true;
+    setComponent(null);
+    setError('');
+
+    const loader = chartModuleByFile[file];
+    if (!loader) {
+      setError(`Chart component not found: ${file}`);
+      return () => {
+        isActive = false;
+      };
+    }
+
+    loader()
+      .then((mod: any) => {
+        const resolved = mod?.default ?? mod?.[Object.keys(mod ?? {})[0]];
+        if (!resolved) {
+          throw new Error('No component export found');
+        }
+        if (isActive) {
+          setComponent(() => resolved);
+        }
+      })
+      .catch((err: any) => {
+        if (isActive) {
+          setError(err?.message ?? 'Failed to load chart component');
+        }
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [file]);
+
+  if (error) {
+    return <div className="text-sm text-red-600 dark:text-red-400">Warning: {error}</div>;
+  }
+
+  if (!Component) {
+    return <div className="text-sm text-slate-500 dark:text-slate-400">Loading chart...</div>;
+  }
+
+  return <Component height={height} />;
+};
+
+const resolveChartHeight = (rawValue: unknown): number | string => {
+  const normalized = String(rawValue ?? '').trim();
+  if (!normalized) {
+    return 360;
+  }
+
+  if (/^\d+(\.\d+)?$/.test(normalized)) {
+    return Number(normalized);
+  }
+
+  return normalized;
 };
 
 export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
@@ -384,8 +462,8 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) =
   return (
     <div className="prose prose-slate dark:prose-invert max-w-none">
       <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeRaw]}
+        remarkPlugins={[remarkGfm, remarkMath]}
+        rehypePlugins={[rehypeRaw, rehypeKatex]}
         components={{
           pre({ node, children, ...props }: any) {
             const child = React.Children.toArray(children)[0];
@@ -410,6 +488,35 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) =
               </code>
             );
           },
+          table: (props: any) => {
+            const dataUrl =
+              props?.['data-excel-url'] ??
+              (props as any)?.dataExcelUrl ??
+              (props as any)?.['data-url'];
+            if (dataUrl) {
+              return <ExcelTable url={String(dataUrl)} />;
+            }
+            return <table {...props} />;
+          },
+          div: (props: any) => {
+            const rawFile =
+              props?.['data-chart-file'] ??
+              (props as any)?.dataChartFile ??
+              '';
+            if (!rawFile) {
+              return <div {...props} />;
+            }
+
+            const rawHeight =
+              props?.['data-height'] ??
+              (props as any)?.dataHeight ??
+              '';
+            const file = String(rawFile).trim();
+            const height = resolveChartHeight(rawHeight);
+
+            return <ChartRenderer file={file} height={height} />;
+          },
+          echart: (props: any) => <EChart {...props} />,
           // Custom handling for links
           a({ node, href, children, ...props }) {
             const isExternal = !!href && /^(https?:)?\/\//i.test(href);

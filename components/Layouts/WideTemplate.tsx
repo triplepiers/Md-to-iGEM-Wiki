@@ -1,7 +1,6 @@
 import React from 'react';
 import { ParsedFile } from '@/types';
 import { MarkdownRenderer } from '@/components/MarkdownRenderer';
-import '@/stylesheet/default.css';
 
 interface Props {
   file: ParsedFile;

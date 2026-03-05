@@ -354,6 +354,7 @@ const escapeHtmlText = (value: string): string =>
     .replace(/>/g, '&gt;');
 
 const IMG_LOCAL_BASE_PATH = 'attachment/imgs';
+const TABLE_LOCAL_BASE_PATHS = ['attachment/excels', 'attachment/execels'];
 
 const resolveFigureUrl = (rawUrl: string): string => {
   const trimmed = rawUrl.trim();
@@ -383,6 +384,47 @@ const resolveFigureUrl = (rawUrl: string): string => {
   }
 
   return `${IMG_LOCAL_BASE_PATH}/${normalized}`;
+};
+
+const resolveTableUrl = (rawUrl: string): string => {
+  const trimmed = rawUrl.trim();
+  if (!trimmed) {
+    return '';
+  }
+
+  const isRemote = /^(https?:)?\/\//i.test(trimmed);
+  const isDataUrl = /^data:/i.test(trimmed);
+  const isAbsolute = trimmed.startsWith('/');
+  if (isRemote || isDataUrl || isAbsolute) {
+    return trimmed;
+  }
+
+  const normalized = trimmed.replace(/^\.\/+/, '');
+  for (const basePath of TABLE_LOCAL_BASE_PATHS) {
+    if (normalized === basePath || normalized.startsWith(`${basePath}/`)) {
+      return normalized;
+    }
+  }
+  if (normalized === 'Attachment/execels' || normalized.startsWith('Attachment/execels/')) {
+    return normalized;
+  }
+  if (normalized === 'Attachment/excels' || normalized.startsWith('Attachment/excels/')) {
+    return normalized;
+  }
+  if (
+    normalized === 'content/Attachment/execels' ||
+    normalized.startsWith('content/Attachment/execels/')
+  ) {
+    return normalized;
+  }
+  if (
+    normalized === 'content/Attachment/excels' ||
+    normalized.startsWith('content/Attachment/excels/')
+  ) {
+    return normalized;
+  }
+
+  return `${TABLE_LOCAL_BASE_PATHS[0]}/${normalized}`;
 };
 
 const parseFigureDirective = (
@@ -423,16 +465,158 @@ const parseFigureDirective = (
   };
 };
 
-const buildFigureAwareMarkdown = (content: string): string => {
+const parseTableDirective = (
+  payload: string
+): {
+  url: string;
+  title: string;
+} => {
+  const parts = payload
+    .split('|')
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  const config: Record<string, string> = {};
+  let positionalUrl = '';
+
+  for (const part of parts) {
+    const kvMatch = part.match(/^([a-zA-Z]+)\s*=\s*(.+)$/);
+    if (kvMatch) {
+      const key = kvMatch[1].toLowerCase();
+      const value = stripWrappingQuotes(kvMatch[2]);
+      config[key] = value;
+      continue;
+    }
+
+    if (!positionalUrl) {
+      positionalUrl = stripWrappingQuotes(part);
+    }
+  }
+
+  return {
+    url: resolveTableUrl(config.url ?? positionalUrl ?? ''),
+    title: config.title ?? config.caption ?? '',
+  };
+};
+
+const parseChartDirective = (
+  payload: string
+): {
+  file: string;
+  height: string;
+  title: string;
+} => {
+  const parts = payload
+    .split('|')
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  const config: Record<string, string> = {};
+  let positionalType = '';
+
+  for (const part of parts) {
+    const kvMatch = part.match(/^([a-zA-Z]+)\s*=\s*(.+)$/);
+    if (kvMatch) {
+      const key = kvMatch[1].toLowerCase();
+      const value = stripWrappingQuotes(kvMatch[2]);
+      config[key] = value;
+      continue;
+    }
+
+    if (!positionalType) {
+      positionalType = stripWrappingQuotes(part);
+    }
+  }
+
+  return {
+    file: config.file ?? config.component ?? positionalType ?? '',
+    height: config.height ?? '',
+    title: config.title ?? '',
+  };
+};
+
+const buildMediaAwareMarkdown = (content: string): string => {
   const codeRanges = getCodeRanges(content);
-  const figureRegex = /\{\{\s*(?:figure|image|img):\s*([^}]+)\}\}/g;
+  const mediaRegex = /\{\{\s*(figure|image|img|chart):\s*([^}]+)\}\}/g;
   let rangeCursor = 0;
   let lastHandledIndex = 0;
   let output = '';
   let figureIndex = 0;
 
   let match: RegExpExecArray | null;
-  while ((match = figureRegex.exec(content)) !== null) {
+  while ((match = mediaRegex.exec(content)) !== null) {
+    const fullMatch = match[0];
+    const directive = match[1];
+    const payload = match[2];
+    const matchStart = match.index;
+    const matchEnd = matchStart + fullMatch.length;
+
+    while (rangeCursor < codeRanges.length && codeRanges[rangeCursor].end <= matchStart) {
+      rangeCursor += 1;
+    }
+
+    const currentRange = codeRanges[rangeCursor];
+    const isInsideCode =
+      !!currentRange && currentRange.start < matchEnd && matchStart < currentRange.end;
+    if (isInsideCode) {
+      continue;
+    }
+
+    output += content.slice(lastHandledIndex, matchStart);
+
+    if (directive === 'chart') {
+      const parsed = parseChartDirective(payload);
+      const safeFile = escapeHtmlAttribute(parsed.file);
+      const safeHeight = escapeHtmlAttribute(parsed.height);
+      const safeTitle = escapeHtmlText(parsed.title);
+      const hasHeight = !!safeHeight;
+      const hasTitle = !!safeTitle;
+
+      if (hasTitle) {
+        figureIndex += 1;
+        const captionText = `Figure ${figureIndex}. ${safeTitle}`;
+        output += `\n\n<figure class="md-chart"><div data-chart-file="${safeFile}"${hasHeight ? ` data-height="${safeHeight}"` : ''}></div><figcaption class="md-figure-caption">${captionText}</figcaption></figure>\n\n`;
+      } else {
+        output += `\n\n<div data-chart-file="${safeFile}"${hasHeight ? ` data-height="${safeHeight}"` : ''}></div>\n\n`;
+      }
+    } else {
+      figureIndex += 1;
+      const parsed = parseFigureDirective(payload);
+      const safeTitle = escapeHtmlText(parsed.title);
+      const safeUrl = escapeHtmlAttribute(parsed.url);
+      const widthStyle = parsed.width
+        ? `width:${escapeHtmlAttribute(parsed.width)};`
+        : 'width:auto;';
+      const heightStyle = parsed.height
+        ? `height:${escapeHtmlAttribute(parsed.height)};`
+        : 'height:320px;';
+      const styleAttribute = `${widthStyle}${heightStyle}`;
+
+      const mediaMarkup = parsed.url
+        ? `<img class="md-figure-img" data-figure-index="${figureIndex}" src="${safeUrl}" alt="${safeTitle || `Figure ${figureIndex}`}" style="${styleAttribute}" />`
+        : `<div class="md-figure-empty" data-figure-index="${figureIndex}" style="${styleAttribute}">Image URL is empty</div>`;
+      const captionText = safeTitle ? `Figure ${figureIndex}. ${safeTitle}` : `Figure ${figureIndex}.`;
+
+      output += `<figure class="md-figure" data-figure-index="${figureIndex}">${mediaMarkup}<figcaption class="md-figure-caption">${captionText}</figcaption></figure>`;
+    }
+
+    lastHandledIndex = matchEnd;
+  }
+
+  output += content.slice(lastHandledIndex);
+  return output;
+};
+
+const buildTableAwareMarkdown = (content: string): string => {
+  const codeRanges = getCodeRanges(content);
+  const tableRegex = /\{\{\s*table:\s*([^}]+)\}\}/g;
+  let rangeCursor = 0;
+  let lastHandledIndex = 0;
+  let output = '';
+  let tableIndex = 0;
+
+  let match: RegExpExecArray | null;
+  while ((match = tableRegex.exec(content)) !== null) {
     const fullMatch = match[0];
     const payload = match[1];
     const matchStart = match.index;
@@ -450,25 +634,22 @@ const buildFigureAwareMarkdown = (content: string): string => {
     }
 
     output += content.slice(lastHandledIndex, matchStart);
-    figureIndex += 1;
-
-    const parsed = parseFigureDirective(payload);
-    const safeTitle = escapeHtmlText(parsed.title);
+    const parsed = parseTableDirective(payload);
     const safeUrl = escapeHtmlAttribute(parsed.url);
-    const widthStyle = parsed.width
-      ? `width:${escapeHtmlAttribute(parsed.width)};`
-      : 'width:auto;';
-    const heightStyle = parsed.height
-      ? `height:${escapeHtmlAttribute(parsed.height)};`
-      : 'height:320px;';
-    const styleAttribute = `${widthStyle}${heightStyle}`;
+    const safeTitle = escapeHtmlText(parsed.title);
+    const hasTitle = !!safeTitle;
+    let captionMarkup = '';
 
-    const mediaMarkup = parsed.url
-      ? `<img class="md-figure-img" data-figure-index="${figureIndex}" src="${safeUrl}" alt="${safeTitle || `Figure ${figureIndex}`}" style="${styleAttribute}" />`
-      : `<div class="md-figure-empty" data-figure-index="${figureIndex}" style="${styleAttribute}">Image URL is empty</div>`;
-    const captionText = safeTitle ? `Figure ${figureIndex}. ${safeTitle}` : `Figure ${figureIndex}.`;
+    if (hasTitle) {
+      tableIndex += 1;
+      captionMarkup = `<div class="md-table-caption" data-table-index="${tableIndex}">Table ${tableIndex}. ${safeTitle}</div>`;
+    }
 
-    output += `<figure class="md-figure" data-figure-index="${figureIndex}">${mediaMarkup}<figcaption class="md-figure-caption">${captionText}</figcaption></figure>`;
+    if (parsed.url) {
+      output += `\n\n${captionMarkup}\n\n<table data-excel-url="${safeUrl}"></table>\n\n`;
+    } else if (hasTitle) {
+      output += `\n\n${captionMarkup}\n\n`;
+    }
     lastHandledIndex = matchEnd;
   }
 
@@ -521,7 +702,7 @@ export const processCustomExtensions = (
   }
 
   output += content.slice(lastHandledIndex);
-  return buildFigureAwareMarkdown(buildReferenceAwareMarkdown(output));
+  return buildTableAwareMarkdown(buildMediaAwareMarkdown(buildReferenceAwareMarkdown(output)));
 };
 
 /**
