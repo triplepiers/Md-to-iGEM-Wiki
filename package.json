@@ -6,6 +6,7 @@
   "scripts": {
     "gen": "node scripts/gen-fs.js",
     "dev": "concurrently \"node scripts/gen-fs.js --watch\" \"vite\"",
+    "prebuild": "npm run gen",
     "build": "vite build",
     "build:static": "node scripts/build-static.js",
     "preview": "vite preview"
