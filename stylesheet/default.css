@@ -58,8 +58,121 @@
   }
   
   /* 图片 */
-  .prose img {
-    @apply rounded-lg shadow-md border border-slate-200 dark:border-slate-800 my-8;
+  .prose .md-figure img {
+    @apply rounded-lg shadow-md border border-slate-200 my-8 cursor-pointer;
+  }
+  .dark .prose .md-figure img {
+    @apply border-slate-800;
+  }
+
+  /* Custom figure extension */
+  .prose .md-figure {
+    @apply my-[0.5em] flex flex-col items-center;
+  }
+  .prose .md-figure-img {
+    @apply my-0 max-w-full rounded-lg shadow-md border border-slate-200 object-contain cursor-zoom-in;
+  }
+  .dark .prose .md-figure-img {
+    @apply border-slate-800;
+  }
+
+  .prose .md-figure-empty {
+    @apply flex items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 text-slate-500 text-sm px-4;
+    min-width: 180px;
+    max-width: 100%;
+  }
+  .dark .prose .md-figure-empty {
+    @apply border-slate-700 bg-slate-900/30 text-slate-400;
+  }
+
+  .prose .md-figure-caption {
+    @apply mt-2 text-sm text-slate-500 text-center;
+  }
+  .dark .prose .md-figure-caption {
+    @apply text-slate-400;
+  }
+
+  /* Figure lightbox */
+  .figure-lightbox-overlay {
+    @apply fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center;
+    animation: figure-lightbox-fade-in 180ms ease-out;
+  }
+
+  .figure-lightbox-overlay.is-closing {
+    animation: figure-lightbox-fade-out 180ms ease-in forwards;
+  }
+
+  .figure-lightbox-close {
+    @apply absolute top-6 right-6 h-10 w-10 rounded-full border border-white/40 bg-black/40 text-white inline-flex items-center justify-center cursor-pointer hover:bg-black/60 transition-all;
+  }
+
+  .figure-lightbox-close:hover {
+    box-shadow: 0 0 16px rgba(255, 255, 255, 0.28);
+  }
+
+  .figure-lightbox-controls {
+    @apply absolute right-6 top-1/2 -translate-y-1/2 flex flex-col gap-3;
+  }
+
+  .figure-lightbox-control-btn {
+    @apply h-10 w-10 rounded-full border border-white/40 bg-black/45 text-white inline-flex items-center justify-center cursor-pointer hover:bg-black/65 transition-all;
+  }
+
+  .figure-lightbox-control-btn:hover {
+    box-shadow: 0 0 16px rgba(255, 255, 255, 0.25);
+  }
+
+  .figure-lightbox-stage {
+    @apply w-[min(84vw,1200px)] h-[min(78vh,860px)] flex items-center justify-center overflow-hidden;
+    cursor: default;
+  }
+
+  .figure-lightbox-image-shell {
+    @apply h-full w-full flex items-center justify-center;
+  }
+
+  .figure-lightbox-image-shell-enter-left {
+    animation: figure-lightbox-enter-left 220ms ease-out;
+  }
+
+  .figure-lightbox-image-shell-enter-right {
+    animation: figure-lightbox-enter-right 220ms ease-out;
+  }
+
+  .figure-lightbox-image {
+    @apply max-w-full max-h-full object-contain select-none;
+    transition: transform 0.1s ease-out;
+    cursor: grab;
+    will-change: transform;
+  }
+
+  .figure-lightbox-image.is-dragging {
+    cursor: grabbing;
+    transition: none;
+  }
+
+  .figure-lightbox-footer {
+    @apply absolute left-1/2 -translate-x-1/2 bottom-6 flex flex-col items-center gap-3 text-white;
+  }
+
+  .figure-lightbox-caption {
+    @apply text-sm md:text-base text-center max-w-[78vw];
+  }
+
+  .figure-lightbox-dots {
+    @apply flex items-center gap-2;
+  }
+
+  .figure-lightbox-dot {
+    @apply h-2 w-2 rounded-full bg-white/40 transition-colors cursor-pointer;
+  }
+
+  .figure-lightbox-dot.is-active {
+    @apply bg-white;
+  }
+
+  .figure-lightbox-counter {
+    @apply text-xs md:text-sm tracking-[0.16em] font-medium;
   }
 
   /* Headings with anchors */
@@ -73,5 +186,45 @@
   }
   .prose pre {
     padding: 0 !important;
+  }
+}
+
+@keyframes figure-lightbox-enter-left {
+  from {
+    opacity: 0;
+    transform: translateX(36px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes figure-lightbox-enter-right {
+  from {
+    opacity: 0;
+    transform: translateX(-36px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes figure-lightbox-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes figure-lightbox-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
   }
 }

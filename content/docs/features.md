@@ -157,13 +157,29 @@ export const toggleTheme = () => {
 
 ### 图片与媒体 (Images)
 
-图片应当自适应宽度，并带有圆角和轻微的阴影。
+- 支持图题 **自动编号**（不带章节）
+- 点击 **图片本体** 后，打开全屏图片预览组件：支持左右翻页 + 缩放
 
-<p class="description">图 1: 这是一个带有 description 类的段落，用于作为图片的注脚。颜色应为 --c-text-secondary。</p>
+- 默认样式
+  - 圆角和轻微的阴影
+  - 水平居中 + **固定高度**
 
-### 其他元素
+- 资源引用
+  - Remote：正常填 URL 即可
+  - Local：资源请放在 `@/attachment/imgs` 路径下，从 `imgs` **之后** 的路径开始填写即可
 
-#### 细节折叠 (Details / Summary)
+- 使用示例：
+
+  ```md
+  {{ figure: url="remote" | title="带标题 + 自定义宽高" | width=300px | height=280px }}
+  {{ figure: url="local" | title="仅设置标题，使用默认固定高度" }}
+  ```
+
+{{ figure: url="Plant_Immunity.png" | title="带标题 + 自定义宽高" | height=280px }}
+
+{{ figure: url="https://static.igem.wiki/teams/4628/wiki/safe/3.png" | title="仅设置标题，使用默认固定高度" }}
+
+### 细节折叠 (Details / Summary)
 
 <details>
 <summary>点击查看详细配置信息</summary>

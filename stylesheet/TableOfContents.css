@@ -3,6 +3,18 @@
   @apply flex-shrink-0 w-64 sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto hidden xl:block pl-4 border-l border-slate-200 dark:border-slate-800;
 }
 
+.toc-nav::after {
+  content: "";
+  display: block;
+  position: sticky;
+  bottom: 0;
+  height: 0.8em;
+  margin-top: -0.8em;
+  background: linear-gradient(to top, var(--c-bg), transparent);
+  pointer-events: none;
+  z-index: 1;
+}
+
 /* Title */
 .toc-title {
   @apply text-sm font-bold text-slate-900 mb-4 uppercase tracking-wider;

@@ -8,7 +8,11 @@ const PROJECT_ROOT = path.resolve(__dirname, '..');
 const CONTENT_DIR = path.join(PROJECT_ROOT, 'content');
 const DIST_DIR = path.join(PROJECT_ROOT, 'dist');
 const OUTPUT_DIR = path.join(PROJECT_ROOT, 'dist-static');
-const CONFIG_PATH = path.join(PROJECT_ROOT, 'config/static-export.json');
+const CONFIG_PATH = path.join(PROJECT_ROOT, 'config/static-export.config.json');
+const ATTACHMENT_SOURCE_DIR = path.join(PROJECT_ROOT, 'attachment');
+const ATTACHMENT_OUTPUT_DIR = path.join(OUTPUT_DIR, 'attachment');
+const LEGACY_ATTACHMENT_SOURCE_DIR = path.join(CONTENT_DIR, 'Attachment');
+const LEGACY_ATTACHMENT_OUTPUT_DIR = path.join(OUTPUT_DIR, 'content', 'Attachment');
 
 const SYSTEM_IGNORES = new Set(['.DS_Store', 'Thumbs.db']);
 const HOME_MARKDOWN_PATH = 'Home.md';
@@ -235,6 +239,12 @@ const main = () => {
   }
 
   copyDir(DIST_DIR, OUTPUT_DIR);
+  if (fs.existsSync(ATTACHMENT_SOURCE_DIR)) {
+    copyDir(ATTACHMENT_SOURCE_DIR, ATTACHMENT_OUTPUT_DIR);
+  }
+  if (fs.existsSync(LEGACY_ATTACHMENT_SOURCE_DIR)) {
+    copyDir(LEGACY_ATTACHMENT_SOURCE_DIR, LEGACY_ATTACHMENT_OUTPUT_DIR);
+  }
 
   const templateHtml = fs.readFileSync(path.join(DIST_DIR, 'index.html'), 'utf-8');
   const manifest = [];
