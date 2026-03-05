@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "gen": "node scripts/gen-fs.js",
+    "normalize-links": "node scripts/normalize-links.js",
     "dev": "concurrently \"node scripts/gen-fs.js --watch\" \"vite\"",
-    "prebuild": "npm run gen",
+    "prebuild": "node scripts/prebuild.js",
     "build": "vite build",
     "build:static": "node scripts/build-static.js",
     "preview": "vite preview"

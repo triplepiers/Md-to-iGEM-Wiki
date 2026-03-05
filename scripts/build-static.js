@@ -10,7 +10,7 @@ let failed = false;
 
 try {
   run(`node scripts/gen-fs.js --ignore-config ${IGNORE_CONFIG_PATH}`);
-  run('npm run build');
+  run('BUILD_CONTEXT=static npm run build');
   run('node scripts/export-static.js');
 } catch (error) {
   failed = true;
