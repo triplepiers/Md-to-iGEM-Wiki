@@ -8,7 +8,7 @@ import { NavigationOrderConfig } from '@/types';
  * - Items not listed keep their default order and appear after listed items.
  */
 export const NAVIGATION_ORDER: NavigationOrderConfig = [
-  'Docs',
+  'docs',
   {
     path: 'Team',
     children: [

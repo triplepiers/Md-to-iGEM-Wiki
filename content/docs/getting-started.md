@@ -92,7 +92,7 @@ npm run build:static
 - 产物目录：`/dist-static`
 - 执行流程：先按 `ignore` 临时生成过滤版 `constants.ts` 再打包，导出完成后会自动恢复完整版 `constants.ts`
 
-- 可在 `/config/static-export.config.json` 中配置 `ignore`：忽略 `content` 下的文件或目录（相对路径，大小写敏感）
+- 可在 `/config/static-export.config.json` 中配置 `ignore`：忽略 `content` 下的文件或目录（相对路径，大小写不敏感）
 
     ```json
     {

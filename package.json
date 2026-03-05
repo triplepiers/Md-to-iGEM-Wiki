@@ -6,6 +6,7 @@
   "scripts": {
     "gen": "node scripts/gen-fs.js",
     "normalize-links": "node scripts/normalize-links.js",
+    "clean": "rm -rf dist dist-static constants.ts",
     "dev": "concurrently \"node scripts/gen-fs.js --watch\" \"vite\"",
     "prebuild": "node scripts/prebuild.js",
     "build": "vite build",

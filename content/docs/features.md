@@ -15,7 +15,7 @@
 
     大家比较熟悉吧 omo，然后可以用 Git 比较版本之类的
 
-- 具体用法见 [Getting-Started](/Docs/getting-started.md) 的 **Modify** 部分，样式预览见本页对应章节
+- 具体用法见 [Getting-Started](/docs/getting-started.md) 的 **Modify** 部分，样式预览见本页对应章节
 
 - 样式主要依赖 TailwindCSS（和官方模版的 Bootstrap 略有出入）
 
@@ -43,9 +43,9 @@
 
 ### MD 文件嵌入
 
-- 支持在 MD 中嵌入其他 Markdown 文件：`{{ embed: Docs/snippets/example.md }}`
+- 支持在 MD 中嵌入其他 Markdown 文件：`{{ embed: docs/snippets/example.md }}`
 
-- 需要注意**路径的大小写**
+- 路径最终会被统一为**小写**
 - **被嵌入** 文件如果在 `content` 路径下也会被展示到 navBar
 
 ### 自动引用解析
