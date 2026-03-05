@@ -100,7 +100,24 @@
 
 {{ chart: BarLineComboChartExample.tsx | height=380 | title="柱状 + 折线复合图示例" }}
 
-## 2 Markdown 样式预览
+## 2 Index 页面交互 (ONLY Tips)
+> 在这个 LLM-powered 时代，您应该鞭策一下 AI 苦力
+>
+> 好吧，只是我不想写 Sample 了
+
+### 全屏滚动
+> 画风比较独特，如果伟大的美工老师是以 Screen 为单位设计主页的话，可以使用
+
+- 效果示例：https://alvarotrigo.com/fullPage/playground/
+- GitHub 仓库：https://github.com/alvarotrigo/fullPage.js
+
+### 滚动动画
+> 和上面的内容互斥
+
+- 比较复杂的时间线动画（类 Flash）：[GSAP](https://greensock.com/)
+- 只是简单的 Scroll Reveal（随滚动出现）：[AOS](https://github.com/michalsnik/aos)
+
+## 3 Markdown 样式预览
 
 在此测试段落文本的行高和颜色。正文颜色应该是 `--c-text-primary`（深蓝灰或柔和白）。
 我们可以在这里测试 **加粗 (Bold)**、*斜体 (Italic)*、~~删除线 (Strikethrough)~~ 以及 [超链接样式 (Link)](https://github.com)。
