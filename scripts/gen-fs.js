@@ -4,7 +4,11 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { FileType } from '../types.ts';
+// Keep in sync with types.ts to avoid importing TS in Node.
+const FileType = {
+  FILE: 'file',
+  DIRECTORY: 'directory',
+};
 
 // Replicate __dirname in ES Modules
 const __filename = fileURLToPath(import.meta.url);
